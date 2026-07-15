@@ -1,0 +1,31 @@
+Options -Indexes
+
+# Hostinger PHP 8.5 handler. Adjust this line if the site uses another PHP version.
+AddHandler application/x-httpd-php85 .php .php5 .php4 .php3
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Allow certificate validation and renewal.
+    RewriteRule ^[.]well-known/acme-challenge/ - [L,NC]
+
+    # Block hidden files and directories (.env, .git, etc.).
+    RewriteRule (^|/)[.] - [F,L,NC]
+
+    # Block Laravel internals when the full project lives in public_html.
+    RewriteRule ^(?:app|bootstrap|config|database|resources|routes|tests|vendor|node_modules)(?:/|$) - [F,L,NC]
+
+    # Block only private storage areas. /storage remains available for public/storage.
+    RewriteRule ^storage/(?:app|framework|logs)(?:/|$) - [F,L,NC]
+
+    # Block project and build files.
+    RewriteRule ^(?:artisan|composer[.](?:json|lock)|package(?:-lock)?[.]json|phpunit[.]xml|server[.]php|vite[.]config[.]js|webpack[.]mix[.]js|postcss[.]config[.]js|tailwind[.]config[.]js|README(?:[.][A-Za-z0-9_-]+)?|CHANGELOG(?:[.][A-Za-z0-9_-]+)?)$ - [F,L,NC]
+
+    # Serve the application exclusively through public/.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<FilesMatch "^([.]env|[.]git|composer[.](json|lock)|artisan|phpunit[.]xml)">
+    Require all denied
+</FilesMatch>
